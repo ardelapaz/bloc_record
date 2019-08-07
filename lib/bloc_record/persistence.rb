@@ -30,6 +30,10 @@ module Persistence
       def update_attribute(attribute, value)
         self.class.update(self.id, { attribute => value })
       end
+
+      def update_attributes(updates)
+        self.class.update(self.id, updates)
+      end
     
     module ClassMethods
         def create(attrs)
@@ -48,11 +52,17 @@ module Persistence
         end
 
         def update(ids, updates)
-          updates = BlocRecord::Utility.convert_keys(updates)
-          updates.delete "id"
-          updates_array = updates.map { |key, value| "#{key}=#{BlocRecord::Utility.sql_strings(value)}" }
-          where_clause = id.nil? ? ";" : "WHERE id = #{id};"
+          if(ids.class == Array && updates.class == Array)
+            for i in 0..updates.length - 1 do
+              update_one(ids[i], updates[i])
+            end
+          else
+            update_one(ids, updates)
+          end
+          true
+        end
 
+        def update_one(ids, updates)
           if ids.class == Fixnum
             where_clause = "WHERE id = #{ids};"
           elsif ids.class == Array
@@ -60,20 +70,26 @@ module Persistence
           else
             where_clause = ";"
           end
+
+          updates = BlocRecord::Utility.convert_keys(updates)
+			updates.delete "id"
+			updates_array = updates.map { |key, value| "#{key} = #{BlocRecord::Utility.sql_strings(value)}" }
    
           connection.execute <<-SQL
             UPDATE #{table}
-            SET #{updates_array * ","} #{where_clause}
+            SET #{updates_array.join(", ")} 
+            #{where_clause}
           SQL
-   
-          true
         end
 
         def update_all(updates)
           update(nil, updates)
         end
-        def update_attributes(updates)
-          self.class.update(self.id, updates)
+        
+        def missing_method(m, *args)
+            s = m.split('_')[1, m.length - 1].join('_')
+            puts "this is s #{s}"
+            update(s, *args)
         end
     end
 end
