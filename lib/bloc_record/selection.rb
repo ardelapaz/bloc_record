@@ -209,8 +209,10 @@ end
   end
  
    def rows_to_array(rows)
-     rows.map { |row| new(Hash[columns.zip(row)]) }
-   end  
+    collection = BlocRecord::Collection.new
+    rows.each { |row| collection << new(Hash[columns.zip(row)]) }
+    collection
+  end  
 
    def method_missing(m, *args, &block)
     m = m.to_s
