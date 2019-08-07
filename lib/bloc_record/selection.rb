@@ -145,18 +145,25 @@ require 'sqlite3'
   end
 
  def order(*args)
-  if args.count > 1
-    order = args.join(",")
-  else
-    order = args.first.to_s
+  argument_array = []
+  args.each do |arg|
+    case arg
+    when String
+      argument_array << arg
+    when Symbol
+      argument_array << arg.to_s
+    when Hash
+      argument_array << arg.map{|key, value| "#{key} #{value}"}
+    end
   end
-
-    rows = connection.execute <<- SQL 
-    SELECT * FROM #{table}
-    ORDER BY #{order};
+    order = argument_array.join(",")
+    
+    rows = connection.execute <<-SQL
+      SELECT * FROM #{table}
+      ORDER BY #{order};
     SQL
     rows_to_array(rows)
-  end
+end
 
   def join(*args)
     if args.count > 1
@@ -175,13 +182,21 @@ require 'sqlite3'
           SELECT * FROM #{table}
           INNER JOIN #{args.first} ON #{args.first}.#{table}_id = #{table}.id
         SQL
-      end
+    when Hash
+      key = args.first.keys.first
+      puts key
+      value = args.first[key]
+      rows = connection.execute <<-SQL
+        SELECT * from #{table}
+        INNER JOIN #{key} ON #{key}.#{table}_id = #{table}.id
+          INNER JOIN #{value} ON #{value}.#{key}_id = #{key}.id
+          SQL
     end
-
+  end
     rows_to_array(rows)
   end
 
-  
+
   ########
    
    private
