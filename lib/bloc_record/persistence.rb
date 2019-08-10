@@ -72,8 +72,8 @@ module Persistence
           end
 
           updates = BlocRecord::Utility.convert_keys(updates)
-			updates.delete "id"
-			updates_array = updates.map { |key, value| "#{key} = #{BlocRecord::Utility.sql_strings(value)}" }
+			    updates.delete "id"
+			    updates_array = updates.map { |key, value| "#{key} = #{BlocRecord::Utility.sql_strings(value)}" }
    
           connection.execute <<-SQL
             UPDATE #{table}
@@ -86,10 +86,9 @@ module Persistence
           update(nil, updates)
         end
         
-        def missing_method(m, *args)
-            s = m.split('_')[1, m.length - 1].join('_')
-            puts "this is s #{s}"
-            update(s, *args)
-        end
+        def method_missing(m, *args)
+          s = m.split('_')[1, m.length - 1].join('_')
+          update(s, *args)
+      end
     end
 end
