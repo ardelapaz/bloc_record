@@ -110,7 +110,7 @@ module Persistence
                     conditions_hash = BlocRecord::Utility.convert_keys(conditions_hash)
                     conditions = conditions_hash.map {|key, value| "#{key}=#{BlocRecord::Utility.sql_strings(value)}"}.join(" and ")
                     where_clause = "WHERE #{conditions}"
-                elsif conditions_hash.class === Array
+                elsif conditions_hash.class == Array
                     where_clause = conditions_hash.shift
                     params = conditions_hash
                 elsif conditions_hash.class == String
