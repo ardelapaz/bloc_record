@@ -196,7 +196,6 @@ end
     rows_to_array(rows)
   end
 
-
   ########
    
    private
